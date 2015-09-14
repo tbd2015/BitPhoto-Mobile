@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">BitPhoto</string>
+    <string name="title_activity_perfil">Perfil</string>
+    <string name="title_activity_fotos_de">Fotos de</string>
+</resources>
