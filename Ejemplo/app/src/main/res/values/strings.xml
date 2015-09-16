@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">BitPhoto</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">fotos de</string>
+    <string name="action_settings2">fotos con</string>
+    <string name="action_settings1">perfil</string>
+
+    <string name="title_activity_reciente">Inicio</string>
+    <string name="title_activity_perfil">perfil</string>
+</resources>
