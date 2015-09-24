@@ -1,11 +1,20 @@
 package com.nicolasrozassepulveda.nicolas.ejemplo;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Rect;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.webkit.WebView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -17,6 +26,8 @@ import org.w3c.dom.Text;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -34,25 +45,61 @@ public class reciente extends AppCompatActivity {
 
 
         String correo = getIntent().getStringExtra("correo");
-        ListView listaFotos = (ListView)findViewById(R.id.listViewImagenes);
-        TextView correito = (TextView)findViewById(R.id.textViewCorreo);
-        //ejemplo de como mostrar una imagen
-        //UrlImageViewHelper.setUrlDrawable(imageView, "http://example.com/image.png");
 
 
-        tarea2 tarea = new tarea2();
-        //tarea.execute(listaFotos);
-        //ArrayAdapter<String> adaptador = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, tarea.rutas);
-        //listaFotos.setAdapter(adaptador);
+        //TextView correito = (TextView)findViewById(R.id.textViewCorreo);
 
-        correito.setText(correo);
-    }
+        //correito.setText(correo);
 
-    class tarea2 extends AsyncTask<String, Void, List<String>> { //tipo empezar, tipo durante, tipo final
-        String texto;
-        String[] rutas=null;
+        tarea2 t = new tarea2();
+        t.execute(correo);
+
+        //ListView listaURL = (ListView)findViewById(R.id.listViewImagenes);
+        ArrayList<String> url = new ArrayList<String>();
+        url = t.urls;
+
+        //List<String> listaFotos = t.lista; // acá guardar lista de urlserver de fotos
+        //System.out.println(listaFotos.get(0));
+
+        Button anterior = (Button)findViewById(R.id.buttonAnterior);
+        Button siguiente = (Button)findViewById(R.id.buttonSiguiente);
+        WebView webview=(WebView)findViewById(R.id.webView);
+        final WebView webview2=(WebView)findViewById(R.id.webView2);
+        WebView webview3=(WebView)findViewById(R.id.webView3);
+        WebView webview4=(WebView)findViewById(R.id.webView4);
+        WebView webview5=(WebView)findViewById(R.id.webView5);
+
+
+        final int[] numeroFoto = {1};
+        anterior.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        siguiente.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+     }
+
+    class tarea2 extends AsyncTask<String, Void, ArrayList<String>> { //tipo empezar, tipo durante, tipo final
 
         public String URL_BD_REMOTA = "http://bitphoto-tbd2015.rhcloud.com/bitphoto/";
+        public String URL_BD_REMOTA_FOTO = "http://bitphotoweb-tbd2015.rhcloud.com";
+        String correo;
+        ArrayList<String> urls = new ArrayList<String>();
+
+        WebView webview=(WebView)findViewById(R.id.webView);
+        WebView webview2=(WebView)findViewById(R.id.webView2);
+        WebView webview3=(WebView)findViewById(R.id.webView3);
+        WebView webview4=(WebView)findViewById(R.id.webView4);
+        WebView webview5=(WebView)findViewById(R.id.webView5);
+
+
 
         @Override
         protected void onPreExecute() {
@@ -61,62 +108,91 @@ public class reciente extends AppCompatActivity {
         }
 
         @Override
-        protected List<String> doInBackground(String... params) { //tipo empezar //retorna tipo final
-            this.texto = params[0];
-            String resultado = "fallo";
-            return getDatos(params[0]);
+        protected ArrayList<String> doInBackground(String... params) { //tipo empezar //retorna tipo final
+            this.correo = params[0];
+            return getDatos(correo);
         }
 
-        public List<String> getDatos(String correo) {
-            List<String> resultado = null;
+        private String readAll(Reader rd) throws IOException {
+            StringBuilder sb = new StringBuilder();
+            int cp;
+            while ((cp = rd.read()) != -1) {
+                sb.append((char) cp);
+            }
+            return sb.toString();
+        }
+
+        public ArrayList<String> getDatos(String correo) {
+
+            String urlUser = URL_BD_REMOTA + "photo/" + correo + "/5";
+            String resultado = "fallo";
             try {
-                String urlUser = URL_BD_REMOTA + "photo/" + correo + "/5";
                 URL url = new URL(urlUser);
                 URLConnection uc = url.openConnection();
                 uc.connect();
 
                 BufferedReader br = new BufferedReader(new InputStreamReader(uc.getInputStream()));
-                String linea = br.readLine();
+                String linea = readAll(br);
+                //System.out.println(linea);
 
-                if (!linea.equals("")) {
+                if(!linea.equals("")){
                     try {
                         JSONObject json = new JSONObject(linea);
-                        String usuario = json.getString("success");
-                        JSONArray jsonArray = json.getJSONArray("photo");
-                        List<String> rutas =null;
-                        for(int i = 0; i < jsonArray.length(); i++){
-                            JSONObject photos = jsonArray.getJSONObject(i); // photos
-                            //photos.getString("urlserver");
-                            rutas.add(photos.getString("urlserver"));
+                        String linea2 = json.getString("photos");
+                        //System.out.println("linea 2: "+linea2);
 
+                        JSONObject json2 = new JSONObject(linea2);
+
+                        //leer arreglo acá
+                        JSONArray jsonurl = json2.getJSONArray("photo");
+                        //System.out.println("llegue!!!");
+
+                        for(int i = 0; i < jsonurl.length(); i++){
+                          //  System.out.println("tamaños: "+i);
+                            String linea3 = jsonurl.getString(i).toString();
+                            JSONObject json3 = new JSONObject(linea3);
+                            String uri = json3.getString("urlserver");
+                            //System.out.println(uri);
+                            urls.add(URL_BD_REMOTA_FOTO+""+uri);
+                            System.out.println(urls.size());
+                            System.out.println(urls.get(i));
                         }
-
-                        if (usuario.equals("true")) {
-                            return rutas;
-                        } else {
-                            return resultado;
-                        }
-
+                    return urls;
+                        //terminar de leer arreglo
                     } catch (JSONException e) {
-                        return resultado;
+                        e.printStackTrace();
                     }
                 }
-
                 br.close();
             } catch (MalformedURLException e) {
             } catch (IOException e) {
             } finally {
             }
-            return resultado;
+
+            return urls;
         }
 
-        protected void onPostExecute(List<String> result) { //tipo final retornado por doInBackground
-            for(int i =0; i<result.size(); i++){
-                rutas[i] = result.get(i).toString();
-            }
-        }
 
+        protected void onPostExecute(ArrayList<String> result) { //tipo final retornado por doInBackground
+            //for(int i=0; i<result.size(); i++){
+                //System.out.println(result.get(i).toString());
+                //uris.setText(result.get(i).toString());
+
+                /*probando*/
+
+                    webview.loadUrl(result.get(0).toString());
+                    webview2.loadUrl(result.get(1).toString());
+                    webview3.loadUrl(result.get(2).toString());
+                    webview4.loadUrl(result.get(3).toString());
+                    webview5.loadUrl(result.get(4).toString());
+
+                /*probando*/
+            //}
+
+        }
     }
+
+
 
 
 
@@ -141,4 +217,6 @@ public class reciente extends AppCompatActivity {
 
         return super.onOptionsItemSelected(item);
     }
+
+
 }
